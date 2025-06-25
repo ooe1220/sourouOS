@@ -27,6 +27,10 @@ read_input:
     cmp al, 0x0D
     je .done_input
     
+    ; バックスペースが押された場合の処理(1文字削除)
+    cmp al, 0x08
+    je .do_delete_last_char
+    
     ; 長さが超えていないか確認
     cmp cx, MAX_INPUT ; 入力文字数が上限に達していないか確認
     jae .read_char    ; 上限超えたら無視して次のキー入力へ
@@ -57,6 +61,15 @@ read_input:
     
     popa
     ret
+
+.do_delete_last_char:
+    cmp cx, 0        ; 入力バッファが空なら無視
+    je .read_char
+    dec di               ; バッファ位置を1文字戻す
+    dec cx               ; 入力文字数カウントを減らす
+    
+    call delete_last_char
+    jmp .read_char
     
 ; キーボードからの入力を受け取り対応するASCIIコードをAL経由で返す
 get_key:
@@ -125,6 +138,8 @@ get_key:
     je .z
     cmp al, 0x1C      ; Enter
     je .enter
+    cmp al, 0x0E      ; バックスペース
+    je .backspace
     
     xor al, al        ; 上記以外のキーは無効（0を返す）
     ret
@@ -209,4 +224,7 @@ get_key:
     ret
 .enter:
     mov al, 0x0D      ; EnterのASCIIコード（CR）
+    ret
+.backspace:
+    mov al, 0x08
     ret

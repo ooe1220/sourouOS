@@ -27,6 +27,11 @@ parse_command:
     call strcmp
     je .do_reboot
     
+    ; clear実行
+    mov di,cmd_clear
+    call strcmp
+    je .do_clear
+    
     ; 未定義命令
     mov si, unknown_cmd
     call print_string
@@ -41,7 +46,12 @@ parse_command:
     ;int 0x19
     ;VBRは上書きしていないので再実行するだけの簡単な処理にした
     ;後からもっと細かい処理を実装する予定
+    call screen_clear
     jmp 0x0000:0x7C00
+    
+.do_clear:
+    call screen_clear
+    jmp .done
     
 .empty:
 .done:
@@ -52,6 +62,7 @@ parse_command:
 cmd_dir db 'DIR', 0
 cmd_help db 'HELP', 0
 cmd_reboot db 'REBOOT', 0
+cmd_clear db 'CLEAR', 0
 teststr db "test", 0x0D, 0x0A, 0
 teststr2 db "test2", 0x0D, 0x0A, 0
     

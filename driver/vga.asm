@@ -212,4 +212,84 @@ scroll_screen:
     popa
     ret
 
+;------------------------------------------------------------
+; 画面上の文字を全削除（実際には空白で埋める）
+;------------------------------------------------------------
+screen_clear:
+    pusha
+    push es
+    push di
+
+    mov ax, 0xB800  ; VRAM開始アドレス
+    mov es, ax
+    xor di, di      ; ES:DI = 0xB800:0x0000
+    mov cx, 80*25   ; 全2000文字
+    mov ah, 0x07    ; 属性（黒背景＋灰色文字）
+    mov al, ' '     ; 空白
+    
+    .clear_loop:
+    stosw           ; [ES:DI] ← AX
+    loop .clear_loop
+
+    ; カーソルの位置を画面左上へ移動させる
+    mov bx, 0
+    call update_hardware_cursor
+    mov word [cursor_pos], 0
+    
+    pop di
+    pop es
+    popa
+ret
+
+;------------------------------------------------------------
+; 一文字削除
+;------------------------------------------------------------
+delete_last_char:
+    pusha
+    push es
+
+    ; 現在のカーソル位置を取得
+    mov ax, [cursor_pos]
+
+    push ax ; div bxでAXが破壊される為、一時退避
+    ; カーソル位置がC:\>まで動いたら消さない
+    ; AX ÷ 80 → 行と列を求める
+    mov bx, 80
+    xor dx, dx
+    div bx      ; AX = 行番号, DX = 列番号（あまり）
+
+    pop ax
+    ; DX = 現在の列位置、プロンプト長(C:\>の長さ=4)以下なら消さない
+    cmp dx, 4
+    jbe .done
+
+    ; カーソル位置を1文字分戻す
+    dec ax
+    push ax
+
+    ; VRAMアドレス計算（1文字2バイト）
+    mov di, ax
+    shl di, 1
+
+    ; VRAMセグメント設定
+    mov ax, 0xB800
+    mov es, ax
+
+    ; 空白と属性を書き込む（属性は0x07＝黒背景＋灰色文字に調整してください）
+    mov byte [es:di], ' '      ; 空白文字
+    mov byte [es:di+1], 0x07   ; 属性
+
+    ; カーソル位置更新
+    pop ax
+    mov [cursor_pos], ax
+
+    ; ハードウェアカーソル更新
+    mov bx, ax
+    call update_hardware_cursor
+
+.done:
+    pop es
+    popa
+    ret
+
 cursor_pos: dw 0
