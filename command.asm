@@ -32,6 +32,11 @@ parse_command:
     call strcmp
     je .do_clear
     
+    ; dir実行
+    mov di,cmd_dir
+    call strcmp
+    je .do_dir
+    
     ; 未定義命令
     mov si, unknown_cmd
     call print_string
@@ -53,6 +58,10 @@ parse_command:
     call screen_clear
     jmp .done
     
+.do_dir:
+    call dir
+    jmp .done    
+    
 .empty:
 .done:
     popa
@@ -63,6 +72,7 @@ cmd_dir db 'DIR', 0
 cmd_help db 'HELP', 0
 cmd_reboot db 'REBOOT', 0
 cmd_clear db 'CLEAR', 0
+
 teststr db "test", 0x0D, 0x0A, 0
 teststr2 db "test2", 0x0D, 0x0A, 0
     
@@ -72,3 +82,5 @@ help_text db 'Available commands:', 0x0D, 0x0A
           db 'DIR    - Show files', 0x0D, 0x0A
           db 'HELP   - This help', 0x0D, 0x0A
           db 'REBOOT - Restart system', 0x0D, 0x0A, 0
+          
+%include "command/dir.asm"

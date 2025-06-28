@@ -59,6 +59,7 @@ update_hardware_cursor:
 print_string:
     pusha
     push si
+    push es
     
     ; カーソル位置を取得（BIOSなし）
     call get_cursor_position
@@ -123,6 +124,7 @@ print_string:
     mov [cursor_pos], di
     mov bx, di            ; BXにカーソル位置（文字単位）を設定
     call update_hardware_cursor  ; ハードウェアカーソル移動
+    pop es
     pop si
     popa
     ret

@@ -17,12 +17,15 @@ start:
     mov ss, ax
     mov sp, 0x7C00
     
+    mov si, msg_loading
+    call print_string
+    
     ; 0x0600にジャンプして処理を続行
     jmp 0x0000:(continue - start + 0x0600)
 
 continue:
 
-    mov si, msg_loading
+    mov si, msg_relocated
     call print_string
 
     ; 4. VBRを0x7C00に読み込む（このコードを上書き）
@@ -55,6 +58,7 @@ disk_error:
     jmp $
 
 msg_loading db "[MBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
+msg_relocated db "[MBR] Relocated to 0x0000:0x0600", 0x0D, 0x0A, 0
 msg_disk_error db "Disk read error!", 0x0D, 0x0A, 0
 
 ; MBRの残りを埋める

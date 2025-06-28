@@ -64,6 +64,35 @@ root_dir:
     dw 0x2100                 ; 最終変更日時
     dw kernel_start_cluster   ; 開始クラスタ
     dd kernel_size            ; ファイルの大きさ（バイト）
+    
+    
+    ; TEST1.TXTの登録
+    db 'TEST1   TXT'          ; ファイル名（8.3形式）
+    db 0x20                   ; 属性
+    db 0
+    db 0
+    dw 0x0000
+    dw 0x2100
+    dw 0x2100
+    dw 0
+    dw 0x0000
+    dw 0x2100
+    dw 100    ; 開始クラスタ番号（例：適当に100番とする）
+    dd 1234   ; ファイルサイズ（バイト）
+
+    ; TEST2.TXTの登録
+    db 'TEST2   TXT'
+    db 0x20
+    db 0
+    db 0
+    dw 0x0000
+    dw 0x2100
+    dw 0x2100
+    dw 0
+    dw 0x0000
+    dw 0x2100
+    dw 110    ; 開始クラスタ番号
+    dd 5678   ; ファイルサイズ
 
     ; ルートディレクトリが32セクタとなるように0で埋める。
     times root_dir_entries * 32 - ($ - root_dir) db 0

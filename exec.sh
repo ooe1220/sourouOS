@@ -12,8 +12,6 @@ nasm -f bin ​fat16_init.asm -o fat16_init.bin
 cd ..
 nasm -f bin kernel.asm -o kernel.bin
 
-
-
 # 1GBの仮想HDD生成
 dd if=/dev/zero of=virtual_disk.img bs=1M count=1024 
 
