@@ -130,6 +130,84 @@ print_string:
     ret
 
 ;------------------------------------------------------------
+; VRAMへ文字列表示（改行対応、BIOSなし）　INT21用　終端文字$
+;------------------------------------------------------------
+print_string_dollar:
+    pusha
+    push si
+    push es
+    
+    ; カーソル位置を取得（BIOSなし）
+    call get_cursor_position
+    
+    ; VRAMのセグメント B800h をESに設定
+    mov ax, 0xB800
+    mov es, ax
+
+    ; カーソル位置を読み込んで、バイト単位に変換
+    mov di, [cursor_pos]
+    shl di, 1
+
+.next_char:
+    lodsb ; AL ← [DS:SI]
+    cmp al, 0x24 ; '$' 終端なら終了
+    je .done
+
+    cmp al, 0x0D        ; CR（行頭に戻る）
+    je .carriage_return
+    cmp al, 0x0A        ; LF（次の行）
+    je .line_feed
+
+    ; 通常文字出力
+    mov [es:di], al
+    mov byte [es:di+1], 0x0A  ; 緑文字
+    add di, 2
+    
+    ; スクロール判定（80×25×2 = 4000バイト）
+    cmp di, 4000
+    jl .next_char
+    call scroll_screen
+    ; scroll後は最下行に戻す
+    ; mov di, 80 * 24 * 2
+    mov di, 80 * 24
+    shl di, 1
+    jmp .next_char
+
+.carriage_return:
+    mov ax, di
+    shr ax, 1
+    xor dx, dx
+    mov bx, 80
+    div bx        ; AX = 行番号, DX = 列番号
+    mul bx        ; 行頭へ
+    shl ax, 1
+    mov di, ax
+    jmp .next_char
+
+.line_feed:
+    add di, 160         ; 次の行へ（80文字×2バイト）
+    
+    ; スクロール判定
+    cmp di, 4000
+    jl .next_char
+    call scroll_screen
+    mov di, 80 * 24 * 2
+    
+    jmp .next_char
+
+.done:
+    shr di, 1
+    mov [cursor_pos], di
+    mov bx, di            ; BXにカーソル位置（文字単位）を設定
+    call update_hardware_cursor  ; ハードウェアカーソル移動
+    pop es
+    pop si
+    popa
+    ret
+
+
+
+;------------------------------------------------------------
 ; putchar_direct: ALの文字をVRAMに直接書き込む
 ;------------------------------------------------------------
 putchar_direct:

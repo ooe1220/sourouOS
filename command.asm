@@ -13,9 +13,6 @@ parse_command:
     ; 命令毎に処理(それぞれの命令と入力を比較して一致すれば実行)
 
     ; help実行
-    ; mov di, cmd_help
-    ; call strcmp
-    ; je .do_help
     mov si, input_buffer
     mov di, cmd_help
     call strcmp
@@ -37,10 +34,8 @@ parse_command:
     call strcmp
     je .do_dir
     
-    ; 未定義命令
-    mov si, unknown_cmd
-    call print_string
-    jmp .done
+    ; 外部コマンド(COM)判定
+    jmp check_external_command
     
 .do_help:
     mov si, help_text
@@ -60,12 +55,40 @@ parse_command:
     
 .do_dir:
     call dir
-    jmp .done    
+    jmp .done   
     
 .empty:
 .done:
     popa
+    ret 
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; 外部コマンド判定処理
+check_external_command:
+    ; ここで input_buffer → 8.3形式に変換
+    mov si, input_buffer
+    mov di, file_name_8_3      ; 11バイトバッファ（カーネル側に確保しておく）
+    call convert_to_8_3_com
+    
+    ; file_name_8_3 を使ってルートディレクトリ検索・COMファイル読込・実行
+    call find_com_and_run
+    cmp ax, 0
+    jne .found
+
+    ; 見つからなければエラー表示
+    mov si, unknown_cmd
+    call print_string
+    jmp .done
+
+.found:
+    ; 実行して戻ってきた時の処理（必要なら）
+    jmp .done
+
+.done:
+    popa
     ret
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    
 
 ; データ置き場
 cmd_dir db 'DIR', 0

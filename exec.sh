@@ -1,5 +1,12 @@
 # bash exec.shで権限無視して実行可能 
 
+# ===== 定数 =====
+VIRTUAL_DISK="virtual_disk.img" #仮想HDD名
+PARTITION1_START_SECTOR=63      #パーティション開始セクタ
+RESERVED_SECTOR_COUNT=1         #予約セクタ
+SECTORS_PER_FAT=8               #FAT表大きさ
+ROOT_DIR_ENTRIES=512            #ルートディレクトリに登録可能なファイル数
+
 #!/bin/bash
 set -e  # エラーが出たら即終了
 
@@ -12,20 +19,33 @@ nasm -f bin ​fat16_init.asm -o fat16_init.bin
 cd ..
 nasm -f bin kernel.asm -o kernel.bin
 
-# 1GBの仮想HDD生成
-dd if=/dev/zero of=virtual_disk.img bs=1M count=1024 
+# 仮想HDD生成128MB
+dd if=/dev/zero of=$VIRTUAL_DISK bs=1M count=128
 
 # MBRを先頭512バイトへ書き込み
-dd if=boot/mbr.bin of=virtual_disk.img bs=512 count=1 conv=notrunc
+dd if=boot/mbr.bin of=$VIRTUAL_DISK bs=512 count=1 conv=notrunc
 
-# VBRを63セクタ目へ書き込み「第1パーティションの先頭512バイト」
-dd if=boot/vbr.bin of=virtual_disk.img bs=512 seek=63 conv=notrunc
+# VBR書き込み
+# 第1パーティションの先頭512バイト
+dd if=boot/vbr.bin of=$VIRTUAL_DISK bs=512 seek=$PARTITION1_START_SECTOR conv=notrunc
 
-# ルートディレクトリ及びFAT表を64バイト目〜「第1パーティションの2セクタ目」に書き込み
-dd if=boot/fat16_init.bin of=virtual_disk.img bs=512 seek=64 conv=notrunc
+# ルートディレクトリ及びFAT表書き込み
+# VBR+予約セクタ 
+dd if=boot/fat16_init.bin of=$VIRTUAL_DISK bs=512 seek=$((PARTITION1_START_SECTOR + RESERVED_SECTOR_COUNT)) conv=notrunc
 
 # カーネル部分
-dd if=kernel.bin of=virtual_disk.img bs=512 seek=112 conv=notrunc
+dd if=kernel.bin of=$VIRTUAL_DISK bs=512 seek=$((PARTITION1_START_SECTOR + RESERVED_SECTOR_COUNT + SECTORS_PER_FAT * 2 + ROOT_DIR_ENTRIES*32/512)) conv=notrunc
+
+# 検証用ファイル
+# データ領域はLBA112〜　63 + 1 + 16(FAT×2) + 32(ルートディレクトリ)
+# カーネルが64KBで128セクタ
+dd if=testfile/TEST1.TXT of=$VIRTUAL_DISK bs=512 seek=240 count=1 conv=notrunc
+ 
+# COM
+cd com
+nasm -f bin hello.asm -o hello.com
+cd ..
+dd if=com/hello.com of=$VIRTUAL_DISK bs=512 seek=248 count=1 conv=notrunc
 
 # 一時ファイル削除
 rm -f boot/mbr.bin
@@ -34,7 +54,7 @@ rm -f boot/fat16_init.bin
 rm -f kernel.bin
 
 # 起動する
-qemu-system-i386 -hda virtual_disk.img -monitor stdio
+qemu-system-i386 -hda $VIRTUAL_DISK -monitor stdio
 
   
 

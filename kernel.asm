@@ -20,23 +20,30 @@ start:
     mov si, title_msg
     call print_string
     
-command_loop:
+    ; INT21Hを割り込み表へ登録
+    mov word [0x21 * 4], int21_handler
+    mov word [0x21 * 4 + 2], cs    
+
+    ; COM実行後ここへ返る    
+    kernel_return:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
     
+command_loop:
+
     ; c:\>を表示
     mov si, prompt
     call print_string
-    
+
     ;キーボードから入力されるのを待つ(入力が終わるまで返ってこない) int 0x16未使用
     call read_input
-    
-    ;mov si, newline
-    ;call print_string
-    
+
     ;入力された命令によって処理をする
     mov si, input_buffer
     call parse_command
-    
-    ; command_loopへ戻りc:\>を表示して次の命令を待つ
+
+    ; command_loopへ戻りを表示して次の命令を待つ
     jmp command_loop
 
 ; 起動画面に表示する文字列
@@ -58,6 +65,8 @@ prompt db  'C:\>', 0
 %include "filesystem/fat16.asm"
 %include "command.asm"
 %include "strings.asm"
+%include "syscall/int21.asm"
+%include "command/run.asm"
 
 ; ここで64KBまで0埋めする
 times 65536-($-$$) db 0
