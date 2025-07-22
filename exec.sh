@@ -52,6 +52,7 @@ rm -f boot/mbr.bin
 rm -f boot/vbr.bin
 rm -f boot/fat16_init.bin
 rm -f kernel.bin
+rm -f com/hello.com
 
 # 起動する
 qemu-system-i386 -hda $VIRTUAL_DISK -monitor stdio

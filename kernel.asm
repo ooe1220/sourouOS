@@ -59,6 +59,7 @@ title_msg db "******************************", 0x0D, 0x0A,
 prompt db  'C:\>', 0
 
 ; 他のソースをこの位置へ展開
+%include "debug.asm"
 %include "driver/keyboard.asm"
 %include "driver/vga.asm"
 %include "driver/disk.asm"

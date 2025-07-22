@@ -108,6 +108,10 @@ search_loop:
     ; クラスタ→LBA変換（仮に1クラスタ8セクタ、データ領域先頭LBA=112）
     add si, 26
     mov ax, [ds:si]      ; 開始クラスタ取得
+    
+    ;;;;;
+    call print_ax_hex
+    ;;;;;
 
     mov bx, ax           ; クラスタ保存
     sub bx, 2            ; クラスタ2が先頭
@@ -124,8 +128,6 @@ search_loop:
     ; COMファイルxp /512 0x2100
     mov dx, 0x0200      ; 保存先セグメント
     mov bx, 0x0100      ; 保存先オフセット
-    ;mov cx, 0x0001      ; LBA上位16bit (256 = 0x0001_0000 → 上位は0x0001)
-    ;mov si, 0x0000      ; LBA下位16bit (256 = 0x0001_0000 → 下位は0x0000)
     mov cx, 0x0000      ; LBA上位16bit (248 < 65536なので0)
     mov si, 248         ; LBA下位16bit (248 = 0x00F8)
     mov al, 8           ; 読み込むセクタ数 = 1
