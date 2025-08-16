@@ -109,31 +109,23 @@ search_loop:
     add si, 26
     mov ax, [ds:si]      ; 開始クラスタ取得
     
-    ;;;;;
-    call print_ax_hex
-    ;;;;;
-
-    mov bx, ax           ; クラスタ保存
-    sub bx, 2            ; クラスタ2が先頭
-    mov ax, 8
-    mul bx               ; (クラスタ - 2) × 8
-    add ax, 112          ; データ領域開始LBA = 112
-
-    mov bl, al           ; LBA下位16bit
-    mov bh, ah
-    xor cl, cl           ; LBA上位不要
-    mov si, 8            ; 1クラスタ分(=8セクタ)
+    ;call print_ax_hex ; 開始クラスタが取得出来ているかの確認用
     
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; COMファイルxp /512 0x2100
+    ; 開始クラスタ→開始セクタへ変換する
+    mov bx, ax        ; BX = Cluster
+    sub bx, 2         ; (Cluster - 2)
+    mov ax, 8         ; SectorsPerCluster
+    mul bx            ; DX:AX = (Cluster-2) * 8
+    add ax, 112       ; DataAreaStart = 112
+    adc dx, 0         ; 繰り上がり処理（念のため）
+    
+    ; COMファイルをメモリ上へ読みこむ(xp /512 0x2100)
+    mov cx, dx    ; LBA上位16bit
+    mov si, ax    ; LBA下位16bit
     mov dx, 0x0200      ; 保存先セグメント
-    mov bx, 0x0100      ; 保存先オフセット
-    mov cx, 0x0000      ; LBA上位16bit (248 < 65536なので0)
-    mov si, 248         ; LBA下位16bit (248 = 0x00F8)
-    mov al, 8           ; 読み込むセクタ数 = 1
-
+    mov bx, 0x0100      ; 保存先オフセット  
+    mov al, 8           ; 読み込むクラスタ数 = 1(1クラスタ=8バイト)
     call read_sectors
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     ; COM実行
     jmp 0x0200:0x0100

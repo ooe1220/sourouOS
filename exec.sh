@@ -3,7 +3,7 @@
 # ===== 定数 =====
 VIRTUAL_DISK="virtual_disk.img" #仮想HDD名
 PARTITION1_START_SECTOR=63      #パーティション開始セクタ
-RESERVED_SECTOR_COUNT=1         #予約セクタ
+RESERVED_SECTOR_COUNT=1         #予約セクタ(ここではVBRの大きさ)
 SECTORS_PER_FAT=8               #FAT表大きさ
 ROOT_DIR_ENTRIES=512            #ルートディレクトリに登録可能なファイル数
 

@@ -44,7 +44,7 @@ fat1:
     ; TEXT1.TXT
     dw 0xFFFF  ; TEXT1.TXT は1クラスタで終端
     
-    ; TEXT2.TXT
+    ; HELLO.COM
     dw 0xFFFF
 
     ; FAT表の剰余分を0で埋める (8セクタ×512バイト-既に書き込んだ分のバイト数)
