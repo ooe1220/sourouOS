@@ -10,25 +10,19 @@ start:
     ; スタック設定
     mov ss, ax
     mov sp, 0x7C00
-    
+
     mov si, load_msg
     call print_string
-    
+
     ; FAT表及びルートディレクトリを読み込む
     call read_fat
-    
+
     mov si, title_msg
     call print_string
-    
+
     ; INT21Hを割り込み表へ登録
     mov word [0x21 * 4], int21_handler
-    mov word [0x21 * 4 + 2], cs    
-
-    ; COM実行後ここへ返る    
-    ; kernel_return:
-    ; xor ax, ax
-    ; mov ds, ax
-    ; mov es, ax
+    mov word [0x21 * 4 + 2], cs
     
 command_loop:
 
