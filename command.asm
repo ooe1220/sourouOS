@@ -72,7 +72,9 @@ check_external_command:
     
     ; file_name_8_3 を使ってルートディレクトリ検索・COMファイル読込・実行
     call find_com_and_run
-    cmp ax, 0
+    
+    mov al, [com_status]  ; メモリからフラグを取得
+    cmp al, 0
     jne .found
 
     ; 見つからなければエラー表示

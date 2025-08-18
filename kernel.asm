@@ -25,10 +25,10 @@ start:
     mov word [0x21 * 4 + 2], cs    
 
     ; COM実行後ここへ返る    
-    kernel_return:
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
+    ; kernel_return:
+    ; xor ax, ax
+    ; mov ds, ax
+    ; mov es, ax
     
 command_loop:
 

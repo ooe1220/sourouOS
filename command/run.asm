@@ -109,7 +109,7 @@ search_loop:
     add si, 26
     mov ax, [ds:si]      ; 開始クラスタ取得
     
-    ;call print_ax_hex ; 開始クラスタが取得出来ているかの確認用
+    ; call print_ax_hex ; 開始クラスタが取得出来ているかの確認用
     
     ; 開始クラスタ→開始セクタへ変換する
     mov bx, ax        ; BX = Cluster
@@ -130,10 +130,11 @@ search_loop:
     ; COM実行
     jmp 0x0200:0x0100
             
-    ; kernel_return:
-    ; xor ax, ax
-    ; mov ds, ax
-    ; mov es, ax
+    kernel_return:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov byte [com_status], 1   ; COM 正常終了 (DS=0の状態代入)
 
 done:
     pop es
@@ -145,6 +146,8 @@ done:
 bpb_sec_per_cluster dw 8        ; 実際はBPBから読み込む
 data_area_start dd 112          ; データ領域開始LBA
 file_name_8_3 times 11 db 0
+
+com_status db 0   ; 0=未実行/失敗, 1=成功
 
 runtest db "TEST", 0x0D, 0x0A,0
 

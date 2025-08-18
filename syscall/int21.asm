@@ -32,6 +32,7 @@ printstring:
 int21_exit:
     pop ds
     popa
+    add sp, 6   ; スタックを上に戻す（消す）　INTによって詰まれるFLAGS、CS、IPを取り除く
         
     ; PSPセグメントを一時的にDSにセット
     mov ax, 0x0200
