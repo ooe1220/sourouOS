@@ -75,7 +75,7 @@ check_external_command:
     
     mov al, [com_status]  ; メモリからフラグを取得
     cmp al, 0
-    mov byte [com_status], 0fff
+    mov byte [com_status], 0
     jne .found
 
     ; 見つからなければエラー表示
