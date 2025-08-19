@@ -72,7 +72,7 @@ find_com_and_run:
     xor ax, ax
     mov ds, ax
     mov si, 0xB000       ; ルートディレクトリ先頭
-    mov cx, 512           ; エントリ数
+    mov cx, 32           ; エントリ数
 
 search_loop:
     push cx
